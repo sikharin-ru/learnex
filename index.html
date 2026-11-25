@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LEARNEX — Learning & Experience Platform for AI and Digital Literacy แพลตฟอร์มการเรียนรู้ปัญญาประดิษฐ์และทักษะดิจิทัลสำหรับครู นักเรียน และสถานศึกษา" />
+  <title>LEARNEX — Learning & Experience Platform for AI and Digital Literacy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <!-- Global Loading Overlay -->
+  <div id="global-loader" class="loader-overlay" hidden aria-live="polite">
+    <div class="loader-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="loader-text">กำลังเชื่อมต่อฐานข้อมูล Google Sheets...</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- =======================================================================
+       1. THIRD-PARTY SSO LOGIN SCREEN
+       ======================================================================= -->
+  <main id="auth-screen" class="auth-layout">
+    <section class="auth-brand-panel" aria-label="ข้อมูลแนะนำแพลตฟอร์ม LEARNEX">
+      <div class="brand-badge">ACADEMIC &amp; INSTITUTIONAL EDITION</div>
+      <div class="brand-logo-row">
+        <div class="logo-emblem" aria-hidden="true">LX</div>
+        <div>
+          <h1 class="brand-title">LEARNEX</h1>
+          <p class="brand-subtitle">Learning &amp; Experience Platform for AI and Digital Literacy</p>
+        </div>
+      </div>
+
+      <p class="brand-lead">
+        ระบบนิเวศการเรียนรู้ด้านปัญญาประดิษฐ์และทักษะดิจิทัลครบวงจรสำหรับสถานศึกษา เชื่อมต่อคลังบทเรียนเชิงปฏิบัติการ ห้องทดลอง AI Sandbox การวัดผลสมรรถนะ 5 ด้าน และการออกใบประกาศนียบัตรดิจิทัลที่ตรวจสอบได้จริง
+      </p>
+
+      <div class="feature-highlights">
+        <article class="highlight-item">
+          <h3>ระบบยืนยันตัวตนมาตรฐานสถาบัน (Third-Party SSO)</h3>
+          <p>รองรับ Google Workspace for Education, Microsoft 365 และระบบพิสูจน์ตัวตนดิจิทัล</p>
+        </article>
+        <article class="highlight-item">
+          <h3>ฐานข้อมูลคลาวด์แบบเรียลไทม์ (Google Apps Script + Sheets)</h3>
+          <p>บันทึกความก้าวหน้า คะแนนประเมินผล ประวัติการใช้งาน และข้อมูลใบประกาศนียบัตรอย่างเป็นระบบ</p>
+        </article>
+        <article class="highlight-item">
+          <h3>แดชบอร์ดวิเคราะห์สมรรถนะและจุดอ่อนผู้เรียน</h3>
+          <p>เปรียบเทียบผลสัมฤทธิ์ก่อนและหลังเรียน แยกตามกลุ่มเป้าหมาย (นักเรียน / ครูผู้สอน)</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="auth-form-panel" aria-label="เข้าสู่ระบบ">
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <h2>เข้าสู่ระบบ LEARNEX</h2>
+          <p>เลือกช่องทางการยืนยันตัวตนผ่านบัญชีภายนอก (Third-Party Authentication)</p>
+        </div>
+
+        <!-- Google Identity Services Container -->
+        <div class="sso-provider-box">
+          <div id="google-signin-wrapper" class="google-btn-holder"></div>
+          <p id="google-sso-hint" class="helper-note">
+            ใช้บัญชี Google Workspace หรือ Gmail ของสถานศึกษาเพื่อเข้าสู่ระบบและสร้างโปรไฟล์อัตโนมัติ
+          </p>
+
+          <div class="sso-secondary-grid">
+            <button type="button" class="btn btn-outline sso-ext-btn" data-provider="Microsoft 365">
+              <span class="sso-dot ms-dot" aria-hidden="true"></span>
+              Microsoft 365 Education
+            </button>
+            <button type="button" class="btn btn-outline sso-ext-btn" data-provider="ThaiD">
+              <span class="sso-dot thaid-dot" aria-hidden="true"></span>
+              ThaiD Digital ID
+            </button>
+          </div>
+        </div>
+
+        <!-- Demo Role Quick Access (Connected to Live Google Sheets) -->
+        <div id="demo-login-panel" class="demo-access-box">
+          <div class="divider-label"><span>หรือทดลองใช้งานตามบทบาท (เชื่อมต่อฐานข้อมูลจริง)</span></div>
+          <div class="role-btn-grid">
+            <button type="button" class="btn btn-role" data-demo-role="student">
+              <strong>สมาชิก / นักเรียน</strong>
+              <span>เข้าเรียน ทำแบบทดสอบ AI Lab</span>
+            </button>
+            <button type="button" class="btn btn-role" data-demo-role="teacher">
+              <strong>ครูผู้สอน</strong>
+              <span>จัดการบทเรียน ดูผลวิเคราะห์</span>
+            </button>
+            <button type="button" class="btn btn-role" data-demo-role="admin">
+              <strong>ผู้ดูแลระบบ (Admin)</strong>
+              <span>จัดการหลักสูตร สิทธิ์ และ Logs</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Public Certificate Verification Bar -->
+        <div class="public-verify-box">
+          <h3>ตรวจสอบความถูกต้องใบประกาศนียบัตร (Public Verification)</h3>
+          <form id="public-cert-form" class="inline-form" novalidate>
+            <label for="public-cert-input" class="sr-only">รหัสใบประกาศนียบัตร</label>
+            <input
+              type="text"
+              id="public-cert-input"
+              placeholder="กรอกรหัส เช่น LNX-2569-0001"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" class="btn btn-secondary">ตรวจสอบ</button>
+          </form>
+          <div id="public-cert-result" class="verify-feedback" hidden></div>
+        </div>
+
+        <footer class="auth-footer">
+          <span id="connection-indicator" class="status-pill status-checking">กำลังตรวจสอบการเชื่อมต่อ API...</span>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <!-- =======================================================================
+       2. MAIN APPLICATION SHELL (AUTHENTICATED WORKSPACE)
+       ======================================================================= -->
+  <div id="app-shell" class="app-layout" hidden>
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar" aria-label="แถบนำทางหลัก">
+      <div class="sidebar-header">
+        <div class="logo-emblem small" aria-hidden="true">LX</div>
+        <div>
+          <span class="sidebar-brand">LEARNEX</span>
+          <span class="sidebar-sub">AI &amp; Digital Literacy</span>
+        </div>
+        <button type="button" id="btn-close-sidebar" class="icon-btn mobile-only" aria-label="ปิดเมนู">✕</button>
+      </div>
+
+      <div class="user-profile-card">
+        <div class="user-avatar" id="sidebar-avatar" aria-hidden="true">U</div>
+        <div class="user-meta">
+          <p class="user-name" id="sidebar-user-name">ผู้ใช้งาน</p>
+          <span class="role-badge" id="sidebar-user-role">นักเรียน</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="เมนูโมดูลระบบ">
+        <button type="button" class="nav-item active" data-view="student">
+          <span class="nav-icon" aria-hidden="true">🎓</span>
+          <span>พอร์ทัลผู้เรียน (สมาชิก)</span>
+        </button>
+        <button type="button" class="nav-item" data-view="dashboard">
+          <span class="nav-icon" aria-hidden="true">📊</span>
+          <span>แดชบอร์ดวิเคราะห์ผล</span>
+        </button>
+        <button type="button" class="nav-item" data-view="sandbox">
+          <span class="nav-icon" aria-hidden="true">🧪</span>
+          <span>AI Sandbox Lab</span>
+        </button>
+        <button type="button" class="nav-item" data-view="certificates">
+          <span class="nav-icon" aria-hidden="true">🏅</span>
+          <span>ใบประกาศนียบัตรดิจิทัล</span>
+        </button>
+        <button type="button" class="nav-item" data-view="community">
+          <span class="nav-icon" aria-hidden="true">💬</span>
+          <span>ชุมชนถาม-ตอบ (Q&amp;A)</span>
+        </button>
+        <button type="button" class="nav-item" id="nav-admin-btn" data-view="admin">
+          <span class="nav-icon" aria-hidden="true">⚙️</span>
+          <span>ศูนย์จัดการระบบ (Admin)</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="xp-mini-panel">
+          <div class="xp-row">
+            <span>ระดับสมรรถนะ: <strong id="sidebar-level">Level 1</strong></span>
+            <span id="sidebar-xp">0 XP</span>
+          </div>
+          <div class="progress-track">
+            <div id="sidebar-xp-bar" class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+        <button type="button" id="btn-logout" class="btn btn-outline btn-block">ออกจากระบบ</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="workspace-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" id="btn-open-sidebar" class="icon-btn mobile-only" aria-label="เปิดเมนูหลัก">☰</button>
+          <div>
+            <h1 id="topbar-title" class="page-title">พอร์ทัลผู้เรียนและคลังหลักสูตร</h1>
+            <p id="topbar-subtitle" class="page-subtitle">LEARNEX Learning &amp; Experience Management</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <span id="sync-status-pill" class="status-pill status-online">เชื่อมต่อ Google Sheets แล้ว</span>
+          <button type="button" id="btn-refresh-data" class="btn btn-secondary btn-sm">รีเฟรชข้อมูล</button>
+        </div>
+      </header>
+
+      <main id="main-content" class="content-container">
+        <!-- =================================================================
+             VIEW A: STUDENT / MEMBER PORTAL
+             ================================================================= -->
+        <section id="view-student" class="view-section" aria-labelledby="topbar-title">
+          <div class="student-hero-grid">
+            <article class="card stat-highlight-card">
+              <span class="card-eyebrow">ความก้าวหน้าการเรียนรู้สะสม</span>
+              <div class="hero-metric-row">
+                <strong id="student-overall-progress" class="metric-huge">0%</strong>
+                <span id="student-completed-count" class="metric-caption">สำเร็จแล้ว 0 จาก 0 หลักสูตร</span>
+              </div>
+              <div class="progress-track large">
+                <div id="student-overall-bar" class="progress-fill" style="width: 0%;"></div>
+              </div>
+            </article>
+
+            <article class="card stat-highlight-card">
+              <span class="card-eyebrow">คะแนนประสบการณ์และเหรียญสมรรถนะ</span>
+              <div class="hero-metric-row">
+                <strong id="student-xp-total" class="metric-huge">0 XP</strong>
+                <span id="student-level-label" class="badge badge-primary">Level 1</span>
+              </div>
+              <div id="student-badges-list" class="badges-wrap" aria-label="เหรียญรางวัลที่ได้รับ"></div>
+            </article>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="toolbar-card card">
+            <div class="filter-group">
+              <label for="course-search-input" class="sr-only">ค้นหาหลักสูตร</label>
+              <input type="search" id="course-search-input" placeholder="ค้นหาชื่อหลักสูตร คำอธิบาย หรือผู้สอน..." />
+            </div>
+            <div class="filter-group">
+              <label for="course-category-filter" class="sr-only">หมวดหมู่หลักสูตร</label>
+              <select id="course-category-filter">
+                <option value="all">ทุกหมวดหมู่รายวิชา</option>
+                <option value="AI Foundations">พื้นฐานปัญญาประดิษฐ์ (AI Foundations)</option>
+                <option value="Prompt Engineering">วิศวกรรมคำสั่ง (Prompt Engineering)</option>
+                <option value="AI for Educators">AI สำหรับการจัดการเรียนรู้</option>
+                <option value="Digital Safety">ความมั่นคงปลอดภัยไซเบอร์ &amp; PDPA</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="course-target-filter" class="sr-only">กลุ่มเป้าหมาย</label>
+              <select id="course-target-filter">
+                <option value="all">ทุกกลุ่มเป้าหมาย</option>
+                <option value="นักเรียน">นักเรียน</option>
+                <option value="ครูผู้สอน">ครูผู้สอน</option>
+                <option value="ทุกกลุ่มเป้าหมาย">ทั่วไป / ทุกกลุ่มเป้าหมาย</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Course Catalog Grid -->
+          <div id="student-courses-grid" class="courses-grid" aria-live="polite"></div>
+        </section>
+
+        <!-- =================================================================
+             VIEW B: ANALYTICS DASHBOARD
+             ================================================================= -->
+        <section id="view-dashboard" class="view-section" hidden aria-label="แดชบอร์ดวิเคราะห์ผล">
+          <div class="section-header-bar">
+            <div>
+              <h2>แดชบอร์ดวิเคราะห์ผลสัมฤทธิ์และสมรรถนะดิจิทัล</h2>
+              <p>ข้อมูลสถิติเรียลไทม์จากฐานข้อมูล Google Sheets พร้อมการเปรียบเทียบคะแนนก่อนและหลังเรียน (Pre-Test vs. Post-Test)</p>
+            </div>
+            <div class="filter-inline">
+              <label for="dashboard-group-select">กลุ่มเป้าหมาย:</label>
+              <select id="dashboard-group-select">
+                <option value="all">ภาพรวมทั้งสถาบัน</option>
+                <option value="student">กลุ่มนักเรียน</option>
+                <option value="teacher">กลุ่มครูผู้สอน</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="card kpi-card">
+              <span class="kpi-label">ผู้ใช้งานที่เปิดใช้งานในระบบ</span>
+              <strong id="kpi-total-users" class="kpi-value">0</strong>
+              <span class="kpi-trend positive">ซิงค์จากตาราง Users</span>
+            </article>
+            <article class="card kpi-card">
+              <span class="kpi-label">หลักสูตรที่เผยแพร่ (Published)</span>
+              <strong id="kpi-total-courses" class="kpi-value">0</strong>
+              <span class="kpi-trend">ครอบคลุม 5 สมรรถนะหลัก</span>
+            </article>
+            <article class="card kpi-card">
+              <span class="kpi-label">อัตราความก้าวหน้าเฉลี่ย</span>
+              <strong id="kpi-avg-progress" class="kpi-value">0%</strong>
+              <span class="kpi-trend positive">คำนวณจากการลงทะเบียนจริง</span>
+            </article>
+            <article class="card kpi-card">
+              <span class="kpi-label">ใบประกาศนียบัตรที่ออกแล้ว</span>
+              <strong id="kpi-total-certs" class="kpi-value">0</strong>
+              <span class="kpi-trend">มีรหัสตรวจสอบ QR Code</span>
+            </article>
+          </div>
+
+          <div class="dashboard-two-col">
+            <article class="card">
+              <div class="card-header-flex">
+                <h3>กราฟเปรียบเทียบสมรรถนะ 5 ด้าน (ก่อนเรียน vs. หลังเรียน)</h3>
+                <div class="chart-legend">
+                  <span class="legend-item"><i class="dot dot-pre"></i> ก่อนเรียน (Pre-Test)</span>
+                  <span class="legend-item"><i class="dot dot-post"></i> หลังเรียน (Post-Test)</span>
+                </div>
+              </div>
+              <div id="competency-chart-container" class="competency-bars"></div>
+            </article>
+
+            <article class="card">
+              <h3>การแจ้งเตือนเชิงวินิจฉัยและข้อเสนอแนะ (Diagnostic Alerts)</h3>
+              <div id="diagnostic-alerts-list" class="alerts-stack"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW C: AI SANDBOX LAB
+             ================================================================= -->
+        <section id="view-sandbox" class="view-section" hidden aria-label="ห้องทดลอง AI Sandbox Lab">
+          <div class="section-header-bar">
+            <div>
+              <h2>AI Sandbox Lab — ห้องปฏิบัติการฝึกเขียนคำสั่งเชิงโครงสร้าง (R-C-T-F)</h2>
+              <p>ฝึกออกแบบ Prompt ทางวิชาการ ตรวจสอบคะแนนคุณภาพโครงสร้าง และสะสมคะแนนประสบการณ์ XP</p>
+            </div>
+            <button type="button" id="btn-load-prompt-sample" class="btn btn-secondary">โหลดตัวอย่างโครงสร้างมาตรฐาน</button>
+          </div>
+
+          <div class="sandbox-grid">
+            <form id="sandbox-form" class="card form-stack" novalidate>
+              <h3>เครื่องมือสร้างคำสั่งแบบมีโครงสร้าง (Structured Prompt Builder)</h3>
+
+              <div class="form-group">
+                <label for="sb-role">1. บทบาทของ AI (Role) <span class="req">*</span></label>
+                <input type="text" id="sb-role" placeholder="เช่น ผู้เชี่ยวชาญด้านการสอนวิทยาศาสตร์ระดับมัธยมศึกษาตอนปลาย" required />
+              </div>
+
+              <div class="form-group">
+                <label for="sb-context">2. บริบทและกลุ่มผู้เรียน (Context) <span class="req">*</span></label>
+                <input type="text" id="sb-context" placeholder="เช่น นักเรียนชั้น ม.5 ที่กำลังศึกษาเรื่องการวิเคราะห์ข้อมูลและความคลาดเคลื่อนในการทดลอง" required />
+              </div>
+
+              <div class="form-group">
+                <label for="sb-task">3. ภาระงานและคำสั่งเฉพาะ (Task &amp; Constraints) <span class="req">*</span></label>
+                <textarea id="sb-task" rows="4" placeholder="เช่น ให้ออกแบบโจทย์สถานการณ์จำลอง 2 ข้อ พร้อมเฉลยวิธีคิดทีละขั้นตอน โดยระบุข้อควรระวังเรื่องแหล่งอ้างอิงที่ถูกต้อง" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="sb-format">4. รูปแบบผลลัพธ์ที่ต้องการ (Output Format)</label>
+                <select id="sb-format">
+                  <option value="รายการสรุปเป็นข้อพร้อมหัวข้อย่อยชัดเจน">รายการสรุปเป็นข้อพร้อมหัวข้อย่อยชัดเจน</option>
+                  <option value="ตารางเปรียบเทียบข้อมูล">ตารางเปรียบเทียบข้อมูล</option>
+                  <option value="แผนการจัดการเรียนรู้และเกณฑ์รูบริก">แผนการจัดการเรียนรู้และเกณฑ์รูบริก</option>
+                  <option value="แบบทดสอบปรนัยพร้อมคำอธิบายเฉลย">แบบทดสอบปรนัยพร้อมคำอธิบายเฉลย</option>
+                </select>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">ประเมินคุณภาพและจำลองผลลัพธ์ Prompt</button>
+                <button type="button" id="btn-clear-sandbox" class="btn btn-outline">ล้างข้อมูล</button>
+              </div>
+            </form>
+
+            <div class="card sandbox-output-card">
+              <h3>ผลการประเมินโครงสร้างและผลลัพธ์จำลอง</h3>
+              <div class="rubric-score-box">
+                <div>
+                  <span class="kpi-label">คะแนนความสมบูรณ์ตามหลัก R-C-T-F</span>
+                  <strong id="sb-score-display" class="metric-huge">0%</strong>
+                </div>
+                <span id="sb-grade-badge" class="badge">รอการประเมิน</span>
+              </div>
+
+              <div id="sb-checklist" class="rubric-checklist"></div>
+
+              <div class="form-group">
+                <label for="sb-compiled-prompt">ชุดคำสั่งที่ประกอบสำเร็จ (พร้อมคัดลอกใช้งาน):</label>
+                <textarea id="sb-compiled-prompt" rows="6" readonly placeholder="ผลลัพธ์ชุดคำสั่งจะแสดงที่นี่..."></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="btn-copy-prompt" class="btn btn-secondary">คัดลอกคำสั่ง</button>
+                <button type="button" id="btn-save-sandbox-xp" class="btn btn-primary" disabled>บันทึกผลการฝึกเพื่อรับ XP</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW D: DIGITAL CERTIFICATES & VERIFICATION
+             ================================================================= -->
+        <section id="view-certificates" class="view-section" hidden aria-label="ใบประกาศนียบัตรดิจิทัล">
+          <div class="section-header-bar">
+            <div>
+              <h2>คลังใบประกาศนียบัตรดิจิทัลและระบบตรวจสอบรหัสอ้างอิง</h2>
+              <p>ใบประกาศนียบัตรออกโดยอัตโนมัติเมื่อผู้เรียนศึกษาครบทุกบทเรียนและสอบผ่านเกณฑ์ร้อยละ 100</p>
+            </div>
+          </div>
+
+          <div class="card verify-banner-card">
+            <h3>ตรวจสอบความถูกต้องของใบประกาศนียบัตรด้วยรหัสอ้างอิง</h3>
+            <form id="member-cert-verify-form" class="inline-form" novalidate>
+              <label for="member-cert-code-input" class="sr-only">รหัสใบประกาศนียบัตร</label>
+              <input type="text" id="member-cert-code-input" placeholder="ระบุรหัสใบประกาศนียบัตร เช่น LNX-2569-0001" required />
+              <button type="submit" class="btn btn-primary">ตรวจสอบข้อมูล</button>
+            </form>
+            <div id="member-cert-verify-result" class="verify-feedback" hidden></div>
+          </div>
+
+          <h3 class="subsection-heading">ใบประกาศนียบัตรของคุณ</h3>
+          <div id="my-certificates-grid" class="courses-grid"></div>
+        </section>
+
+        <!-- =================================================================
+             VIEW E: COMMUNITY Q&A
+             ================================================================= -->
+        <section id="view-community" class="view-section" hidden aria-label="ชุมชนถาม-ตอบทางวิชาการ">
+          <div class="section-header-bar">
+            <div>
+              <h2>ชุมชนแลกเปลี่ยนเรียนรู้และถาม-ตอบทางวิชาการ (Academic Q&amp;A)</h2>
+              <p>พื้นที่ซักถามข้อสงสัย แลกเปลี่ยนแนวปฏิบัติที่ดีระหว่างนักเรียนและครูผู้สอน</p>
+            </div>
+          </div>
+
+          <div class="community-layout">
+            <form id="new-question-form" class="card form-stack" novalidate>
+              <h3>ตั้งคำถามหรือหัวข้อแลกเปลี่ยนใหม่</h3>
+              <div class="form-group">
+                <label for="qa-course-tag">หมวดหมู่รายวิชาที่เกี่ยวข้อง</label>
+                <select id="qa-course-tag">
+                  <option value="ทั่วไป">ทั่วไป / ข้อเสนอแนะ</option>
+                  <option value="CRS-101">CRS-101: พื้นฐานปัญญาประดิษฐ์</option>
+                  <option value="CRS-102">CRS-102: วิศวกรรมคำสั่งเชิงวิชาการ</option>
+                  <option value="CRS-103">CRS-103: การออกแบบการสอนด้วย AI</option>
+                  <option value="CRS-104">CRS-104: ความมั่นคงปลอดภัยไซเบอร์ &amp; PDPA</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="qa-title">หัวข้อคำถาม <span class="req">*</span></label>
+                <input type="text" id="qa-title" placeholder="ระบุประเด็นคำถามให้ชัดเจน..." required />
+              </div>
+              <div class="form-group">
+                <label for="qa-body">รายละเอียดคำถาม <span class="req">*</span></label>
+                <textarea id="qa-body" rows="4" placeholder="อธิบายบริบทหรือสิ่งที่ต้องการคำแนะนำ..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">เผยแพร่คำถาม (+15 XP)</button>
+            </form>
+
+            <div id="community-threads-list" class="threads-stack"></div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             VIEW F: ADMIN MANAGEMENT CONSOLE
+             ================================================================= -->
+        <section id="view-admin" class="view-section" hidden aria-label="ศูนย์จัดการระบบสำหรับผู้ดูแล">
+          <div class="section-header-bar">
+            <div>
+              <h2>ศูนย์บริหารจัดการระบบและฐานข้อมูล (Admin Console)</h2>
+              <p>จัดการคลังหลักสูตร กำหนดสิทธิ์ผู้ใช้งาน SSO และตรวจสอบบันทึกความปลอดภัยของระบบ (Audit Logs)</p>
+            </div>
+            <div class="admin-top-actions">
+              <button type="button" id="btn-sync-db-schema" class="btn btn-outline">ตรวจสอบโครงสร้าง Sheets</button>
+              <button type="button" id="btn-open-new-course" class="btn btn-primary">+ สร้างหลักสูตรใหม่</button>
+            </div>
+          </div>
+
+          <div class="tabs-bar" role="tablist" aria-label="หมวดหมู่การจัดการระบบ">
+            <button type="button" class="tab-btn active" role="tab" aria-selected="true" data-admin-tab="courses">จัดการหลักสูตร (<span id="admin-course-count">0</span>)</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-admin-tab="users">ผู้ใช้งานและสิทธิ์ SSO (<span id="admin-user-count">0</span>)</button>
+            <button type="button" class="tab-btn" role="tab" aria-selected="false" data-admin-tab="logs">บันทึกตรวจสอบระบบ (Audit Logs)</button>
+          </div>
+
+          <!-- Tab 1: Courses Table -->
+          <div id="admin-panel-courses" class="admin-tab-panel card table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>รหัสวิชา</th>
+                  <th>ชื่อหลักสูตร</th>
+                  <th>หมวดหมู่</th>
+                  <th>กลุ่มเป้าหมาย</th>
+                  <th>ระยะเวลา</th>
+                  <th>สถานะ</th>
+                  <th>การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="admin-courses-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Tab 2: Users & Roles Table -->
+          <div id="admin-panel-users" class="admin-tab-panel card table-responsive" hidden>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>รหัสผู้ใช้</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>อีเมล SSO</th>
+                  <th>XP / ระดับ</th>
+                  <th>บทบาท (Role)</th>
+                  <th>สถานะบัญชี</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Tab 3: Audit Logs Table -->
+          <div id="admin-panel-logs" class="admin-tab-panel card table-responsive" hidden>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>วัน-เวลา (ISO)</th>
+                  <th>ผู้ดำเนินการ</th>
+                  <th>กิจกรรม (Action)</th>
+                  <th>รายละเอียด</th>
+                  <th>ผลลัพธ์</th>
+                </tr>
+              </thead>
+              <tbody id="admin-logs-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODALS (CLASSROOM PLAYER, COURSE EDITOR, CERTIFICATE VIEWER, CONFIRM)
+       ======================================================================= -->
+
+  <!-- Modal 1: Interactive Classroom Player -->
+  <div id="modal-classroom" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="classroom-modal-title">
+    <div class="modal-dialog modal-xl">
+      <header class="modal-header">
+        <div>
+          <span id="classroom-course-code" class="badge badge-primary">CRS-101</span>
+          <h2 id="classroom-modal-title">ชื่อหลักสูตร</h2>
+        </div>
+        <button type="button" class="icon-btn" data-close-modal="modal-classroom" aria-label="ปิดห้องเรียน">✕</button>
+      </header>
+      <div class="modal-body classroom-grid">
+        <div class="classroom-stage">
+          <div class="video-frame">
+            <iframe
+              id="classroom-video-iframe"
+              title="วิดีโอบทเรียน LEARNEX"
+              src=""
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <article class="lesson-reading-box">
+            <h3 id="classroom-active-lesson-title">เนื้อหาบทเรียน</h3>
+            <p id="classroom-active-lesson-content"></p>
+          </article>
+
+          <!-- End-of-Course Quiz Box -->
+          <form id="classroom-quiz-form" class="quiz-box">
+            <h3>แบบทดสอบวัดผลสัมฤทธิ์ประจำรายวิชา (เกณฑ์ผ่าน 100%)</h3>
+            <p id="classroom-quiz-question" class="quiz-question-text"></p>
+            <div id="classroom-quiz-options" class="quiz-options-list"></div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">บันทึกความก้าวหน้าและส่งคำตอบ</button>
+            </div>
+          </form>
+        </div>
+
+        <aside class="classroom-sidebar">
+          <h3>รายการบทเรียนย่อย</h3>
+          <p class="helper-note">คลิกเลือกบทเรียนเพื่อศึกษาและทำเครื่องหมายว่าเรียนจบแล้ว</p>
+          <div id="classroom-lessons-list" class="lesson-steps-list"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Admin Course Editor -->
+  <div id="modal-course-form" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="course-form-title">
+    <div class="modal-dialog modal-lg">
+      <header class="modal-header">
+        <h2 id="course-form-title">สร้าง / แก้ไขข้อมูลหลักสูตร</h2>
+        <button type="button" class="icon-btn" data-close-modal="modal-course-form" aria-label="ปิดหน้าต่าง">✕</button>
+      </header>
+      <form id="course-editor-form" class="modal-body form-stack" novalidate>
+        <input type="hidden" id="edit-course-id" />
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-course-title">ชื่อหลักสูตร <span class="req">*</span></label>
+            <input type="text" id="edit-course-title" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-course-instructor">ชื่อวิทยากร / ผู้สอน <span class="req">*</span></label>
+            <input type="text" id="edit-course-instructor" required />
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="edit-course-category">หมวดหมู่</label>
+            <select id="edit-course-category">
+              <option value="AI Foundations">AI Foundations</option>
+              <option value="Prompt Engineering">Prompt Engineering</option>
+              <option value="AI for Educators">AI for Educators</option>
+              <option value="Digital Safety">Digital Safety</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-course-target">กลุ่มเป้าหมาย</label>
+            <select id="edit-course-target">
+              <option value="ทุกกลุ่มเป้าหมาย">ทุกกลุ่มเป้าหมาย</option>
+              <option value="นักเรียน">นักเรียน</option>
+              <option value="ครูผู้สอน">ครูผู้สอน</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-course-duration">ระยะเวลา (นาที)</label>
+            <input type="number" id="edit-course-duration" min="15" max="600" value="90" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-course-desc">คำอธิบายรายวิชา <span class="req">*</span></label>
+          <textarea id="edit-course-desc" rows="3" required></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-course-video">ลิงก์วิดีโอ Embed (YouTube Embed URL)</label>
+            <input type="url" id="edit-course-video" placeholder="https://www.youtube.com/embed/..." />
+          </div>
+          <div class="form-group">
+            <label for="edit-course-status">สถานะการเผยแพร่</label>
+            <select id="edit-course-status">
+              <option value="published">เผยแพร่ทันที (Published)</option>
+              <option value="draft">ฉบับร่าง (Draft)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-course-quiz-q">คำถามวัดผลท้ายบทเรียน <span class="req">*</span></label>
+          <input type="text" id="edit-course-quiz-q" required />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-course-opt-0">ตัวเลือกที่ 1</label>
+            <input type="text" id="edit-course-opt-0" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-course-opt-1">ตัวเลือกที่ 2</label>
+            <input type="text" id="edit-course-opt-1" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-course-opt-2">ตัวเลือกที่ 3</label>
+            <input type="text" id="edit-course-opt-2" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-course-opt-3">ตัวเลือกที่ 4</label>
+            <input type="text" id="edit-course-opt-3" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-course-correct-idx">ข้อที่ถูกต้อง</label>
+          <select id="edit-course-correct-idx">
+            <option value="0">ตัวเลือกที่ 1</option>
+            <option value="1">ตัวเลือกที่ 2</option>
+            <option value="2">ตัวเลือกที่ 3</option>
+            <option value="3">ตัวเลือกที่ 4</option>
+          </select>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modal-course-form">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกข้อมูลลง Google Sheets</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Official Certificate Preview -->
+  <div id="modal-certificate" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="cert-modal-title">
+    <div class="modal-dialog modal-lg">
+      <header class="modal-header no-print">
+        <h2 id="cert-modal-title">ใบประกาศนียบัตรดิจิทัล (Official Digital Certificate)</h2>
+        <button type="button" class="icon-btn" data-close-modal="modal-certificate" aria-label="ปิดหน้าต่าง">✕</button>
+      </header>
+      <div class="modal-body">
+        <div id="printable-certificate" class="certificate-sheet">
+          <div class="cert-border-inner">
+            <div class="cert-top-emblem">LEARNEX</div>
+            <p class="cert-org">Learning &amp; Experience Platform for AI and Digital Literacy</p>
+            <h3 class="cert-heading">ใบประกาศนียบัตรฉบับนี้ให้ไว้เพื่อแสดงว่า</h3>
+            <p id="cert-view-recipient" class="cert-recipient">ชื่อ-นามสกุล ผู้เรียน</p>
+            <p class="cert-body-text">ได้ผ่านการอบรมและประเมินผลสัมฤทธิ์ตามเกณฑ์มาตรฐานในหลักสูตร</p>
+            <p id="cert-view-course" class="cert-course-name">ชื่อหลักสูตร</p>
+            <p id="cert-view-date" class="cert-date">ให้ไว้ ณ วันที่ ...</p>
+
+            <div class="cert-bottom-row">
+              <div class="cert-sign-block">
+                <div class="cert-sign-line"></div>
+                <p>คณะกรรมการบริหารหลักสูตร LEARNEX</p>
+                <span>ฝ่ายวิชาการและนวัตกรรมดิจิทัล</span>
+              </div>
+              <div class="cert-qr-block">
+                <div id="cert-qr-svg" class="cert-qr-box" aria-label="QR Code ตรวจสอบเอกสาร"></div>
+                <span id="cert-view-code" class="cert-code-text">LNX-2569-0001</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="modal-footer no-print">
+        <button type="button" class="btn btn-outline" data-close-modal="modal-certificate">ปิดหน้าต่าง</button>
+        <button type="button" id="btn-print-certificate" class="btn btn-primary">พิมพ์ / บันทึกเป็น PDF</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal 4: Custom Confirmation Dialog -->
+  <div id="modal-confirm" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+    <div class="modal-dialog modal-sm">
+      <header class="modal-header">
+        <h2 id="confirm-modal-title">ยืนยันการดำเนินการ</h2>
+        <button type="button" class="icon-btn" data-close-modal="modal-confirm" aria-label="ปิด">✕</button>
+      </header>
+      <div class="modal-body">
+        <p id="confirm-modal-message">คุณต้องการดำเนินการนี้ใช่หรือไม่?</p>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" id="btn-confirm-cancel" class="btn btn-outline">ยกเลิก</button>
+        <button type="button" id="btn-confirm-ok" class="btn btn-danger">ยืนยัน</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
